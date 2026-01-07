@@ -2,6 +2,8 @@
 
 Ce dossier contient un système de génération de PDFs professionnels à partir des fichiers Markdown de documentation.
 
+Cet outil a été fait pour mes besoins et n'a aucune prétention. N'hesitez pas à vous en inspirer.
+
 ## Prérequis
 
 ### 1. Pandoc
