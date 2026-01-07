@@ -1,0 +1,170 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages essentiels
+\usepackage{fontspec}
+\usepackage[french]{babel}
+\defaultfontfeatures{Ligatures=TeX}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{multirow}
+
+% Configuration de la page
+\geometry{
+    a4paper,
+    left=25mm,
+    right=25mm,
+    top=30mm,
+    bottom=30mm,
+    headheight=15pt
+}
+
+% Couleurs personnalisées
+\definecolor{primarycolor}{RGB}{33, 150, 243}
+\definecolor{secondarycolor}{RGB}{96, 125, 139}
+\definecolor{headercolor}{RGB}{55, 71, 79}
+\definecolor{linkcolor}{RGB}{33, 150, 243}
+
+% Configuration des liens
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    filecolor=linkcolor,
+    urlcolor=linkcolor,
+    citecolor=linkcolor,
+    pdfborder={0 0 0},
+    pdftitle={$title$},
+    pdfauthor={$author$}
+}
+
+% En-têtes et pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{secondarycolor}$title$}
+\fancyhead[R]{\small\color{secondarycolor}$date$}
+\fancyfoot[C]{\small\color{secondarycolor}\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primarycolor}\leaders\hrule height \headrulewidth\hfill}}
+
+% Style de la table des matières
+\renewcommand{\cftsecfont}{\color{headercolor}\bfseries}
+\renewcommand{\cftsecpagefont}{\color{secondarycolor}}
+\renewcommand{\cftsubsecfont}{\color{secondarycolor}}
+\renewcommand{\cftsubsecpagefont}{\color{secondarycolor}}
+\setlength{\cftbeforesecskip}{8pt}
+\setlength{\cftbeforesubsecskip}{4pt}
+
+% Style des sections
+\titleformat{\section}
+    {\Large\bfseries\color{headercolor}}
+    {\thesection}{1em}{}
+    [\vspace{2pt}{\titlerule[0.8pt]}]
+\titlespacing*{\section}{0pt}{20pt}{10pt}
+
+\titleformat{\subsection}
+    {\large\bfseries\color{primarycolor}}
+    {\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{15pt}{8pt}
+
+\titleformat{\subsubsection}
+    {\normalsize\bfseries\color{secondarycolor}}
+    {\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
+
+% Style des listes
+\setlist[itemize,1]{label=\textcolor{primarycolor}{\textbullet}, leftmargin=*}
+\setlist[itemize,2]{label=\textcolor{secondarycolor}{\textopenbullet}, leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+
+% Style des tableaux
+\renewcommand{\arraystretch}{1.3}
+
+% Style des blocs de code
+\usepackage{listings}
+\lstset{
+    basicstyle=\small\ttfamily,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    rulecolor=\color{secondarycolor},
+    numbers=none,
+    xleftmargin=10pt,
+    xrightmargin=10pt,
+    framexleftmargin=5pt,
+    framexrightmargin=5pt
+}
+
+% Espacements
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% Correction pour pandoc
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+% Commande tightlist pour pandoc
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Fix pour les tableaux pandoc avec XeLaTeX
+\makeatletter
+\@ifundefined{c@none}{\newcounter{none}}{}
+\makeatother
+
+\begin{document}
+
+% Page de titre personnalisée
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries\color{headercolor}$title$\par}
+    \vspace{1cm}
+
+    $if(subtitle)$
+    {\Large\color{secondarycolor}$subtitle$\par}
+    \vspace{0.5cm}
+    $endif$
+
+    \vspace{2cm}
+
+    $if(author)$
+    {\large\color{primarycolor}$author$\par}
+    \vspace{0.5cm}
+    $endif$
+
+    $if(date)$
+    {\large\color{secondarycolor}$date$\par}
+    $endif$
+
+    \vfill
+
+    {\large\color{secondarycolor}Go on RASALVA\par}
+    {\normalsize\color{secondarycolor}Documentation du Projet\par}
+
+    \vspace{1cm}
+\end{titlepage}
+
+% Table des matières
+$if(toc)$
+\newpage
+\tableofcontents
+\newpage
+$endif$
+
+% Contenu principal
+$body$
+
+\end{document}
