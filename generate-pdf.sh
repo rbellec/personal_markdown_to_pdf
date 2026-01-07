@@ -156,16 +156,50 @@ if [[ ! -f "$INPUT" ]]; then
     exit 1
 fi
 
-# Déterminer le nom de sortie
+# Sauvegarder le nom de fichier original pour le titre et la sortie
+ORIGINAL_INPUT="$INPUT"
+
+# Déterminer le nom de sortie (basé sur le fichier original, pas le temporaire)
 if [[ -z "$OUTPUT" ]]; then
-    OUTPUT="${INPUT%.md}.pdf"
+    OUTPUT="${ORIGINAL_INPUT%.md}.pdf"
 fi
 
 # Extraire le titre du premier # du fichier Markdown
-TITLE=$(grep -m 1 "^# " "$INPUT" | sed 's/^# //' || echo "Document")
+TITLE=$(grep -m 1 "^# " "$ORIGINAL_INPUT" | sed 's/^# //' || echo "Document")
+
+# Créer un fichier temporaire avec les émojis remplacés
+TEMP_INPUT="${ORIGINAL_INPUT%.md}_temp.md"
+cp "$INPUT" "$TEMP_INPUT"
+
+# Mapping des émojis vers des symboles/texte LaTeX
+sed -i.bak \
+    -e 's/🌱/[Serre]/g' \
+    -e 's/💧/[Eau]/g' \
+    -e 's/⛏️/[Mine]/g' \
+    -e 's/⛏/[Mine]/g' \
+    -e 's/📦/[Extraction]/g' \
+    -e 's/✅/[OK]/g' \
+    -e 's/❌/[X]/g' \
+    -e 's/✓/[v]/g' \
+    -e 's/✗/[x]/g' \
+    -e 's/❓/[?]/g' \
+    -e 's/⚠️/[!]/g' \
+    -e 's/⚠/[!]/g' \
+    -e 's/💻/[Code]/g' \
+    -e 's/🎯/[Cible]/g' \
+    -e 's/🔧/[Outil]/g' \
+    -e 's/📝/[Doc]/g' \
+    -e 's/🤖/[Bot]/g' \
+    "$TEMP_INPUT"
+
+# Nettoyer le fichier backup créé par sed -i
+rm -f "${TEMP_INPUT}.bak"
+
+# Utiliser le fichier temporaire pour la génération
+INPUT="$TEMP_INPUT"
 
 echo -e "${BLUE}=== Génération du PDF ===${NC}"
-echo -e "${YELLOW}Fichier source:${NC} $INPUT"
+echo -e "${YELLOW}Fichier source:${NC} $ORIGINAL_INPUT"
 echo -e "${YELLOW}Fichier cible:${NC} $OUTPUT"
 echo -e "${YELLOW}Titre:${NC} $TITLE"
 echo -e "${YELLOW}Auteur:${NC} $AUTHOR"
@@ -211,6 +245,8 @@ if [[ $? -eq 0 && -f "$OUTPUT" ]]; then
     if [[ "$CLEAN" == true ]]; then
         echo -e "${BLUE}Nettoyage des fichiers intermédiaires...${NC}"
         rm -f *.aux *.log *.out *.toc *.fdb_latexmk *.fls *.synctex.gz
+        # Nettoyer le fichier temporaire avec émojis remplacés
+        rm -f "$TEMP_INPUT" "${TEMP_INPUT}.bak"
         echo -e "${GREEN}✓ Nettoyage terminé${NC}"
     fi
 
@@ -222,5 +258,7 @@ if [[ $? -eq 0 && -f "$OUTPUT" ]]; then
     echo -e "\n${BLUE}Pour ouvrir le PDF:${NC} open '$OUTPUT'"
 else
     echo -e "${RED}✗ Erreur lors de la génération du PDF${NC}" >&2
+    # Nettoyer le fichier temporaire même en cas d'erreur
+    rm -f "$TEMP_INPUT" "${TEMP_INPUT}.bak"
     exit 1
 fi
