@@ -17,6 +17,39 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Fonction pour lire la configuration YAML
+load_config() {
+    local config_file=""
+
+    # Chercher pdf-config.yaml dans le répertoire courant
+    if [[ -f "pdf-config.yaml" ]]; then
+        config_file="pdf-config.yaml"
+    # Sinon chercher dans le répertoire du script
+    elif [[ -f "$(dirname "$0")/pdf-config.yaml" ]]; then
+        config_file="$(dirname "$0")/pdf-config.yaml"
+    fi
+
+    if [[ -n "$config_file" ]]; then
+        # Parser les valeurs simples du YAML (format "clé: valeur")
+        while IFS=: read -r key value; do
+            # Ignorer les commentaires et lignes vides
+            [[ "$key" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "$key" ]] && continue
+
+            # Nettoyer la clé et la valeur
+            key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            value=$(echo "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//')
+
+            # Appliquer les configurations
+            case "$key" in
+                author) CONFIG_AUTHOR="$value" ;;
+                date) CONFIG_DATE="$value" ;;
+                toc) [[ "$value" == "true" ]] && CONFIG_TOC="--toc" ;;
+            esac
+        done < "$config_file"
+    fi
+}
+
 # Fonction d'aide
 show_help() {
     cat << EOF
@@ -32,6 +65,14 @@ OPTIONS:
     -d, --date DATE     Date (défaut: date actuelle)
     --no-clean          Ne pas supprimer les fichiers intermédiaires .tex
 
+CONFIGURATION:
+    Créez un fichier 'pdf-config.yaml' dans le répertoire courant ou dans
+    le répertoire du script pour définir des valeurs par défaut :
+
+    author: "Votre Nom"
+    date: "Janvier 2026"
+    toc: true
+
 EXEMPLES:
     ${0##*/} QUESTIONS_AUTEUR.md --toc
     ${0##*/} TODO.md -o tasks.pdf --author "Équipe Dev"
@@ -44,11 +85,17 @@ PRÉREQUIS:
 EOF
 }
 
-# Valeurs par défaut
-TOC=""
+# Charger la configuration depuis pdf-config.yaml si présent
+CONFIG_AUTHOR=""
+CONFIG_DATE=""
+CONFIG_TOC=""
+load_config
+
+# Valeurs par défaut (peuvent être overridées par la config puis par les arguments CLI)
+TOC="${CONFIG_TOC}"
 OUTPUT=""
-AUTHOR="Équipe de développement"
-DATE=$(/bin/date "+%d %B %Y" 2>/dev/null || echo "Janvier 2026")
+AUTHOR="${CONFIG_AUTHOR:-Équipe de développement}"
+DATE="${CONFIG_DATE:-$(/bin/date "+%d %B %Y" 2>/dev/null || echo "Janvier 2026")}"
 CLEAN=true
 INPUT=""
 

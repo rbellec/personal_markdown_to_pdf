@@ -42,6 +42,26 @@ brew install --cask mactex-no-gui
 
 Voir `INSTALL_LATEX.md` pour plus de détails.
 
+## Configuration (Optionnel)
+
+Pour définir des valeurs par défaut pour vos projets, créez un fichier `pdf-config.yaml` :
+
+```bash
+# Copier l'exemple
+cp pdf-config.yaml.example pdf-config.yaml
+
+# Éditer selon vos besoins
+# Exemple de contenu :
+author: "Votre Nom"
+toc: true
+```
+
+Le script cherchera `pdf-config.yaml` dans :
+1. Le répertoire courant (priorité)
+2. Le répertoire du script
+
+**Avantages :** Plus besoin de spécifier `--author` et `--toc` à chaque fois !
+
 ## Utilisation
 
 ### Méthode 1 : Script Direct
@@ -65,6 +85,9 @@ OPTIONS:
 EXEMPLES:
     ./generate-pdf.sh rapport.md --toc --author "Mon Nom"
     ./generate-pdf.sh notes.md -o mes-notes.pdf
+
+    # Avec configuration (pdf-config.yaml définit déjà author et toc)
+    ./generate-pdf.sh rapport.md
 ```
 
 ### Méthode 2 : Makefile (pour projets)

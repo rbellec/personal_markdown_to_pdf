@@ -9,6 +9,9 @@
 *.fls
 *.synctex.gz
 
+# Configuration (user-specific, use pdf-config.yaml.example as template)
+pdf-config.yaml
+
 # macOS
 .DS_Store
 

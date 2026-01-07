@@ -1,0 +1,21 @@
+# Configuration pour la génération de PDFs
+# Copiez ce fichier en 'pdf-config.yaml' dans votre projet et personnalisez
+
+# Auteur par défaut pour tous les PDFs du projet
+author: "Raphaël B."
+
+# Date (optionnel, par défaut : date actuelle)
+# date: "Janvier 2026"
+
+# Options par défaut
+# toc: true          # Table des matières
+# lang: fr           # Langue (fr, en, etc.)
+
+# Vous pouvez aussi configurer des PDFs spécifiques :
+# documents:
+#   QUESTIONS_AUTEUR.md:
+#     author: "Raphaël B."
+#     toc: true
+#   TODO.md:
+#     author: "Équipe Dev"
+#     toc: true
