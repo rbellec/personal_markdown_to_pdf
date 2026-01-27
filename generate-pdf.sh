@@ -45,6 +45,8 @@ load_config() {
                 author) CONFIG_AUTHOR="$value" ;;
                 date) CONFIG_DATE="$value" ;;
                 toc) [[ "$value" == "true" ]] && CONFIG_TOC="--toc" ;;
+                project) CONFIG_PROJECT="$value" ;;
+                project-desc) CONFIG_PROJECT_DESC="$value" ;;
             esac
         done < "$config_file"
     fi
@@ -58,12 +60,14 @@ Usage: ${0##*/} FICHIER.md [OPTIONS]
 Génère un PDF professionnel à partir d'un fichier Markdown.
 
 OPTIONS:
-    -h, --help          Affiche cette aide
-    -t, --toc           Inclut une table des matières
-    -o, --output FILE   Nom du fichier de sortie (défaut: même nom avec .pdf)
-    -a, --author NAME   Nom de l'auteur
-    -d, --date DATE     Date (défaut: date actuelle)
-    --no-clean          Ne pas supprimer les fichiers intermédiaires .tex
+    -h, --help              Affiche cette aide
+    -t, --toc               Inclut une table des matières
+    -o, --output FILE       Nom du fichier de sortie (défaut: même nom avec .pdf)
+    -a, --author NAME       Nom de l'auteur
+    -d, --date DATE         Date (défaut: date actuelle)
+    -p, --project NAME      Nom du projet (affiché sur la page de titre)
+    --project-desc TEXT     Description du projet (affiché sous le nom du projet)
+    --no-clean              Ne pas supprimer les fichiers intermédiaires .tex
 
 CONFIGURATION:
     Créez un fichier 'pdf-config.yaml' dans le répertoire courant ou dans
@@ -72,6 +76,8 @@ CONFIGURATION:
     author: "Votre Nom"
     date: "Janvier 2026"
     toc: true
+    project: "Mon Projet"
+    project-desc: "Documentation"
 
 EXEMPLES:
     ${0##*/} QUESTIONS_AUTEUR.md --toc
@@ -89,13 +95,17 @@ EOF
 CONFIG_AUTHOR=""
 CONFIG_DATE=""
 CONFIG_TOC=""
+CONFIG_PROJECT=""
+CONFIG_PROJECT_DESC=""
 load_config
 
 # Valeurs par défaut (peuvent être overridées par la config puis par les arguments CLI)
 TOC="${CONFIG_TOC}"
 OUTPUT=""
-AUTHOR="${CONFIG_AUTHOR:-Équipe de développement}"
+AUTHOR="${CONFIG_AUTHOR:-}"
 DATE="${CONFIG_DATE:-$(/bin/date "+%d %B %Y" 2>/dev/null || echo "Janvier 2026")}"
+PROJECT="${CONFIG_PROJECT:-}"
+PROJECT_DESC="${CONFIG_PROJECT_DESC:-}"
 CLEAN=true
 INPUT=""
 
@@ -120,6 +130,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         -d|--date)
             DATE="$2"
+            shift 2
+            ;;
+        -p|--project)
+            PROJECT="$2"
+            shift 2
+            ;;
+        --project-desc)
+            PROJECT_DESC="$2"
             shift 2
             ;;
         --no-clean)
@@ -202,8 +220,10 @@ echo -e "${BLUE}=== Génération du PDF ===${NC}"
 echo -e "${YELLOW}Fichier source:${NC} $ORIGINAL_INPUT"
 echo -e "${YELLOW}Fichier cible:${NC} $OUTPUT"
 echo -e "${YELLOW}Titre:${NC} $TITLE"
-echo -e "${YELLOW}Auteur:${NC} $AUTHOR"
+[[ -n "$AUTHOR" ]] && echo -e "${YELLOW}Auteur:${NC} $AUTHOR"
 echo -e "${YELLOW}Date:${NC} $DATE"
+[[ -n "$PROJECT" ]] && echo -e "${YELLOW}Projet:${NC} $PROJECT"
+[[ -n "$PROJECT_DESC" ]] && echo -e "${YELLOW}Description:${NC} $PROJECT_DESC"
 
 # Vérifier que pandoc est installé
 if ! command -v pandoc &> /dev/null; then
@@ -222,20 +242,25 @@ fi
 # Générer le PDF
 echo -e "\n${BLUE}Génération en cours...${NC}"
 
-pandoc "$INPUT" \
-    --from markdown \
-    --to latex \
-    --template=template.latex \
-    --pdf-engine=xelatex \
-    --variable title="$TITLE" \
-    --variable author="$AUTHOR" \
-    --variable date="$DATE" \
-    --variable lang=fr \
-    --variable papersize=a4 \
-    --variable geometry:margin=25mm \
-    $TOC \
-    --output="$OUTPUT" \
-    2>&1 | grep -v "LaTeX Warning" || true
+# Construire les options pandoc
+PANDOC_OPTS=(
+    --from markdown
+    --to latex
+    --template=template.latex
+    --pdf-engine=xelatex
+    --variable "title=$TITLE"
+    --variable "date=$DATE"
+    --variable lang=fr
+    --variable papersize=a4
+    --variable geometry:margin=25mm
+)
+
+[[ -n "$AUTHOR" ]] && PANDOC_OPTS+=(--variable "author=$AUTHOR")
+[[ -n "$PROJECT" ]] && PANDOC_OPTS+=(--variable "project=$PROJECT")
+[[ -n "$PROJECT_DESC" ]] && PANDOC_OPTS+=(--variable "project-desc=$PROJECT_DESC")
+[[ -n "$TOC" ]] && PANDOC_OPTS+=($TOC)
+
+pandoc "$INPUT" "${PANDOC_OPTS[@]}" --output="$OUTPUT" 2>&1 | grep -v "LaTeX Warning" || true
 
 # Vérifier que la génération a réussi
 if [[ $? -eq 0 && -f "$OUTPUT" ]]; then

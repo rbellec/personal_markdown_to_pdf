@@ -152,8 +152,12 @@ $endif$
 
     \vfill
 
-    {\large\color{secondarycolor}Go on RASALVA\par}
-    {\normalsize\color{secondarycolor}Documentation du Projet\par}
+    $if(project)$
+    {\large\color{secondarycolor}$project$\par}
+    $endif$
+    $if(project-desc)$
+    {\normalsize\color{secondarycolor}$project-desc$\par}
+    $endif$
 
     \vspace{1cm}
 \end{titlepage}
