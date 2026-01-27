@@ -3,6 +3,7 @@
 % Packages essentiels
 \usepackage{fontspec}
 \usepackage[french]{babel}
+\usepackage{amssymb}  % Pour les symboles mathématiques (\square pour checkboxes)
 \defaultfontfeatures{Ligatures=TeX}
 \usepackage{microtype}
 \usepackage{geometry}
