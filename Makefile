@@ -1,48 +1,55 @@
-# Makefile pour générer les PDFs de documentation
+# Makefile générique pour convertir des fichiers Markdown en PDF
 
-.PHONY: all clean questions todo terminology help
+.PHONY: all clean help list
 
 # Couleurs pour l'affichage
 BLUE := \033[0;34m
 GREEN := \033[0;32m
+YELLOW := \033[0;33m
 NC := \033[0m # No Color
 
-all: questions todo terminology
-	@echo "$(GREEN)✓ Tous les PDFs ont été générés avec succès$(NC)"
+# Options par défaut (peuvent être surchargées)
+PDF_OPTIONS ?= --toc
 
-questions: QUESTIONS_AUTEUR.pdf
+# Trouver tous les fichiers .md dans le répertoire courant
+MD_FILES := $(wildcard *.md)
+PDF_FILES := $(MD_FILES:.md=.pdf)
 
-todo: TODO.pdf
+# Cible par défaut : convertir tous les fichiers .md en .pdf
+all: $(PDF_FILES)
+	@echo "$(GREEN)[OK] Tous les PDFs ont ete generes avec succes$(NC)"
 
-terminology: TERMINOLOGY.pdf
+# Règle générique : convertir n'importe quel .md en .pdf
+%.pdf: %.md template.latex generate-pdf.sh
+	@echo "$(BLUE)Generation de $@...$(NC)"
+	@./generate-pdf.sh $< $(PDF_OPTIONS)
 
-QUESTIONS_AUTEUR.pdf: QUESTIONS_AUTEUR.md template.latex generate-pdf.sh
-	@echo "$(BLUE)Génération de QUESTIONS_AUTEUR.pdf...$(NC)"
-	@./generate-pdf.sh QUESTIONS_AUTEUR.md --toc --author "Équipe de développement"
-
-TODO.pdf: TODO.md template.latex generate-pdf.sh
-	@echo "$(BLUE)Génération de TODO.pdf...$(NC)"
-	@./generate-pdf.sh TODO.md --toc --author "Équipe de développement"
-
-TERMINOLOGY.pdf: TERMINOLOGY.md template.latex generate-pdf.sh
-	@echo "$(BLUE)Génération de TERMINOLOGY.pdf...$(NC)"
-	@./generate-pdf.sh TERMINOLOGY.md --toc --author "Équipe de développement"
+# Lister les fichiers qui seront convertis
+list:
+	@echo "$(YELLOW)Fichiers Markdown trouves :$(NC)"
+	@for f in $(MD_FILES); do echo "  - $$f -> $${f%.md}.pdf"; done
+	@echo ""
+	@echo "$(YELLOW)Options actuelles : $(PDF_OPTIONS)$(NC)"
 
 clean:
-	@echo "$(BLUE)Nettoyage des fichiers générés...$(NC)"
+	@echo "$(BLUE)Nettoyage des fichiers generes...$(NC)"
 	@rm -f *.pdf *.tex *.aux *.log *.out *.toc *.fdb_latexmk *.fls *.synctex.gz
-	@echo "$(GREEN)✓ Nettoyage terminé$(NC)"
+	@echo "$(GREEN)[OK] Nettoyage termine$(NC)"
 
 help:
-	@echo "Makefile pour Go on RASALVA - Génération de PDFs"
+	@echo "Markdown to PDF - Makefile generique"
 	@echo ""
 	@echo "Cibles disponibles:"
-	@echo "  make all          - Génère tous les PDFs (défaut)"
-	@echo "  make questions    - Génère QUESTIONS_AUTEUR.pdf"
-	@echo "  make todo         - Génère TODO.pdf"
-	@echo "  make terminology  - Génère TERMINOLOGY.pdf"
-	@echo "  make clean        - Supprime tous les fichiers générés"
+	@echo "  make              - Convertit tous les .md en .pdf (defaut)"
+	@echo "  make all          - Idem"
+	@echo "  make FICHIER.pdf  - Convertit un fichier specifique"
+	@echo "  make list         - Liste les fichiers qui seront convertis"
+	@echo "  make clean        - Supprime tous les fichiers generes"
 	@echo "  make help         - Affiche cette aide"
+	@echo ""
+	@echo "Personnalisation des options:"
+	@echo "  make PDF_OPTIONS='--toc --author \"Mon Nom\"'"
+	@echo "  make FICHIER.pdf PDF_OPTIONS='--no-toc'"
 	@echo ""
 	@echo "Utilisation du script directement:"
 	@echo "  ./generate-pdf.sh FICHIER.md [OPTIONS]"
